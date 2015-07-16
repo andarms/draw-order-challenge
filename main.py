@@ -15,7 +15,7 @@ class App(object):
         self.clock  = pg.time.Clock()
         self.fps = 60
         self.done = False
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredDirty()
         self.player = actors.Player(self.screen_rect.center, 3)
         self.all_sprites.add(self.player)
         self.make_npcs()
@@ -49,13 +49,13 @@ class App(object):
         """Update all actors."""
         now = pg.time.get_ticks()
         self.all_sprites.update(now, self.screen_rect)
+        for sprite in self.all_sprites.sprites():
+            self.all_sprites.change_layer(sprite, sprite.rect.bottom)
 
     def render(self):
         """Fill screen and render all actors."""
         self.screen.fill(prepare.BACKGROUND_COLOR)
-        ordered = sorted(self.all_sprites, key=lambda x: x.rect.bottom)
-        for sprite in ordered:
-            sprite.draw(self.screen)
+        self.all_sprites.draw(self.screen)
         pg.display.update()
 
     def main_loop(self):
