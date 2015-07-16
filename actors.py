@@ -9,7 +9,7 @@ import tools
 SPRITE_SIZE = (32, 36)
 
 
-class RPGSprite(pg.sprite.Sprite):
+class RPGSprite(pg.sprite.DirtySprite):
     """Base class for player and AI sprites."""
     def __init__(self, pos, speed, name, facing="DOWN", *groups):
         super(RPGSprite, self).__init__(*groups)
@@ -17,14 +17,14 @@ class RPGSprite(pg.sprite.Sprite):
         self.name = name
         self.direction = facing
         self.old_direction = None  
-        self.direction_stack = []  
-        self.redraw = True  
+        self.direction_stack = []
         self.animate_timer = 0.0
         self.animate_fps = 10.0
         self.walkframes = None
         self.walkframe_dict = self.make_frame_dict(self.get_frames(name))
         self.adjust_images()
         self.rect = self.image.get_rect(center=pos)
+        self.layer = self.rect.bottom
 
     def get_frames(self, character):
         """Get a list of all frames."""
@@ -44,15 +44,14 @@ class RPGSprite(pg.sprite.Sprite):
         if self.direction != self.old_direction:
             self.walkframes = self.walkframe_dict[self.direction]
             self.old_direction = self.direction
-            self.redraw = True
+            self.dirty = 1
         self.make_image(now)
 
     def make_image(self, now):
         """Update the sprite's animation as needed."""
-        if self.redraw or now-self.animate_timer > 1000/self.animate_fps:
+        if self.dirty or now-self.animate_timer > 1000/self.animate_fps:
             self.image = next(self.walkframes)
             self.animate_timer = now
-        self.redraw = False
 
     def add_direction(self, direction):
         """
