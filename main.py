@@ -15,9 +15,9 @@ class App(object):
         self.clock  = pg.time.Clock()
         self.fps = 60
         self.done = False
-        self.all_sprites = []
+        self.all_sprites = pg.sprite.Group()
         self.player = actors.Player(self.screen_rect.center, 3)
-        self.all_sprites.append(self.player)
+        self.all_sprites.add(self.player)
         self.make_npcs()
 
     def make_npcs(self):
@@ -27,8 +27,7 @@ class App(object):
                 pos = [random.randint(50,400), random.randint(50,400)]
                 speed = random.randint(1,2)
                 way = random.choice(prepare.DIRECTIONS)
-                self.all_sprites.append(actors.AISprite(pos, speed, name, way))
-
+                actors.AISprite(pos, speed, name, way, self.all_sprites)
 
     def event_loop(self):
         """
@@ -49,14 +48,13 @@ class App(object):
     def update(self):
         """Update all actors."""
         now = pg.time.get_ticks()
-        for sprite in self.all_sprites:
-            sprite.update(now, self.screen_rect)
-        self.all_sprites.sort(key=lambda x: x.rect.y)
+        self.all_sprites.update(now, self.screen_rect)
 
     def render(self):
         """Fill screen and render all actors."""
         self.screen.fill(prepare.BACKGROUND_COLOR)
-        for sprite in self.all_sprites:
+        ordered = sorted(self.all_sprites, key=lambda x: x.rect.bottom)
+        for sprite in ordered:
             sprite.draw(self.screen)
         pg.display.update()
 
